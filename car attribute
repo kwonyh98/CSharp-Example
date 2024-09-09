@@ -1,0 +1,63 @@
+using System;
+
+class Car
+{
+    private string name = null;
+    private int speed = 0;
+    public Car(string name, int speed)
+    {
+        this.name = name;
+        this.speed = speed;
+    }
+
+// 자동차의 이름을 가져오는 메서드
+    public string GetName()
+    {
+        return this.name;
+    }
+
+// 자동차의 속도를 가져오는 메서드
+    public int GetSpeed()
+    {
+        return this.speed;
+    }
+
+// 자동차의 전진, 후진, 우회전, 좌회전, 정지 기능을 담당하는 메서드
+    public void Front()
+    {
+        Console.WriteLine("자동차가 전진합니다.");
+    }
+
+    public void Back()
+    {
+        Console.WriteLine("자동차가 후진합니다.");
+    }
+
+    public void Right()
+    {
+        Console.WriteLine("자동차가 우회전 합니다.");
+    }
+
+    public void Left()
+    {
+        Console.WriteLine("자동차가 좌회전 합니다.");
+    }
+
+    public void Stop()
+    {
+        Console.WriteLine("자동차가 멈춥니다.");
+    }
+}
+
+class MainClass
+{
+    public static void Main()
+    {
+        Car myCar = new Car("소나타", 80);
+        Console.WriteLine("자동차의 이름은 " + myCar.GetName() + "입니다.");
+        myCar.Front();
+        Console.WriteLine("자동차의 속도는 시속 " + myCar.GetSpeed() + "km입니다.");
+        myCar.Back();
+        myCar.Stop();
+    }
+}
