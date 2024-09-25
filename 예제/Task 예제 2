@@ -1,0 +1,29 @@
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        //Task의 객체 생성과 Action 대리자 비동기 실행을 동시에
+        Task t1 = Task.Run(() => {
+            int num = 1;
+            Console.WriteLine("Task 1 number: " + num);
+        });
+
+        Task t2 = Task.Run(() => {
+            int num = 2;
+            Console.WriteLine("Task 2 number: " + num);
+        });
+
+        Task t3 = Task.Run(() => {
+            int num = 3;
+            Console.WriteLine("Task 3 number: " + num);
+        });
+
+        // Task 결과를 비동기 호출이 완료될 때까지 대기
+        t1.Wait();
+        t2.Wait();
+        t3.Wait();
+    }
+}
