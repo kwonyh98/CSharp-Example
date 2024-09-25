@@ -1,0 +1,18 @@
+class Helper
+{
+    public void Run()
+    {
+        Console.WriteLine("Helpler");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Helper helper = new Helper();
+
+        Thread t1 = new Thread(new ThreadStart(helper.Run));
+        t1.Start();
+    }
+}
