@@ -1,0 +1,65 @@
+using System.Diagnostics;
+
+namespace ConsoleEventTest
+{
+    public class EventDelegateTest
+    {
+        public delegate void MyEventHandler();
+        public event MyEventHandler TestEvent;
+        public void Do()
+        {
+            Trace.WriteLine("11");
+            TestEvent?.Invoke();
+        }
+    }
+
+    public class EventTest
+    {
+        public event EventHandler TestEvent2;
+        public void Do()
+        {
+            Trace.WriteLine("33");
+            TestEvent2(this, EventArgs.Empty);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Trace.WriteLine("1");
+            EventDelegateTest edt = new EventDelegateTest();
+            edt.TestEvent += new EventDelegateTest.MyEventHandler(doAction);
+            Trace.WriteLine("2");
+            edt.Do();
+            Trace.WriteLine("3");
+
+            EventTest et = new EventTest();
+            et.TestEvent2 += new EventHandler(doAction2);
+            et.Do();
+            Trace.WriteLine("4");
+        }
+
+        static void doAction()
+        {
+            Trace.WriteLine("22");
+            Console.WriteLine("Call event");
+        }
+
+        private static void doAction2(object sender, EventArgs e)
+        {
+            Trace.WriteLine("44");
+            Console.WriteLine("Call event2");
+        }
+    }
+}
+/* 위 코드 실행시 아래와 같은 순서로 처리
+1
+2
+11
+22
+3
+33
+44
+4
+*/
