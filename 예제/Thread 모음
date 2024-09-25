@@ -1,0 +1,254 @@
+// 스레드 사용하기
+namespace ThreadExample
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func); 
+            myThread.Start(); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1);
+                Thread.Sleep(100); 
+            } 
+            Console.WriteLine("메인쓰레드 종료");
+        } 
+            
+        private static void Func() 
+        { 
+            for (int i = 0; i < 10; i++) 
+            { 
+                Console.WriteLine(i + 1); 
+                Thread.Sleep(100); 
+            } 
+        } 
+    } 
+}
+
+
+// 스레드 매개변수 전달하기
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func);
+            myThread.Start(7); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+            Console.WriteLine("메인쓰레드 종료"); 
+        } 
+        private static void Func(object obj) 
+        { 
+            int num = (int)obj; 
+            for (int i = 0; i < num; i++) 
+            { 
+                Console.WriteLine(i + 1); 
+                Thread.Sleep(100); 
+            } 
+        } 
+    } 
+}
+
+
+// 스레드에 2개이상의 매개변수 전달하기
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func); 
+            ThreadParam tp = new ThreadParam(2, 6); 
+            myThread.Start(tp); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+            Console.WriteLine("메인쓰레드 종료"); 
+        } 
+        private static void Func(object obj) 
+        { 
+            ThreadParam tempParam = obj as ThreadParam; 
+            int num = tempParam.param1 + tempParam.param2; 
+            for (int i = 0; i < num; i++) 
+            { 
+                Console.WriteLine(i + 1); 
+                Thread.Sleep(100); 
+            } 
+        } 
+    } 
+    class ThreadParam 
+    { 
+        public int param1; 
+        public int param2; 
+        public ThreadParam(int num1, int num2) 
+        { 
+            this.param1 = num1; this.param2 = num2; 
+        } 
+    } 
+}
+
+
+// 백그라운드 스레드
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func);
+            myThread.IsBackground = true; 
+            myThread.Start(); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            }
+            Console.WriteLine("메인쓰레드 종료"); 
+        } 
+        private static void Func() 
+        { 
+            for (int i = 0; i < 10; i++) 
+            {
+                Console.WriteLine(i + 1); 
+                Thread.Sleep(100); 
+            } 
+        }
+    }
+}
+
+
+// 스레드 기다리기 1(블락시키기)
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func); 
+            myThread.Start(); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+            myThread.Join(); 
+            Console.WriteLine("메인 스레드 종료"); 
+        } 
+        private static void Func() 
+        { 
+            for (int i = 0; i < 10; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+        }
+    }
+}
+
+
+// 스레드 기다리기 2(블락시키기)
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static void Main(string[] args) 
+        { 
+            EventWaitHandle ewh = new EventWaitHandle(false, EventResetMode.ManualReset); 
+            Thread myThread = new Thread(Func); 
+            myThread.Start(ewh); 
+            Console.WriteLine("서브스레드 시작"); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+            ewh.WaitOne(); 
+            Console.WriteLine("메인쓰레드 종료"); 
+        }
+        private static void Func(object obj) 
+        { 
+            EventWaitHandle ewh = obj as EventWaitHandle; 
+            for (int i = 0; i < 10; i++) 
+            { 
+                Console.WriteLine(i + 1); 
+                Thread.Sleep(100); 
+            } 
+            ewh.Set();
+        }
+    }
+}
+
+
+// 폴링
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static bool myFlag = false; 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func); 
+            myThread.Start(); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i+1); 
+                Thread.Sleep(100); 
+            } 
+            myFlag = true; 
+            Console.WriteLine("메인스레드 종료"); 
+        } 
+        private static void Func() 
+        { 
+            while (true) 
+            { 
+                if(myFlag) 
+                { 
+                    Console.WriteLine("폴링 성공"); 
+                } 
+                Thread.Sleep(100); 
+            } 
+        }
+    } 
+}
+
+
+// 스레드 강제 종료
+namespace ThreadExample 
+{ 
+    class Program 
+    { 
+        static bool myFlag = false; 
+        static void Main(string[] args) 
+        { 
+            Thread myThread = new Thread(Func); 
+            myThread.Start(); 
+            for (int i = 0; i < 3; i++) 
+            { 
+                Console.WriteLine(i + 1);
+                Thread.Sleep(100); 
+            } 
+            myThread.Abort(); 
+            myFlag = true; 
+            Console.WriteLine("메인스레드 종료"); 
+        } 
+        private static void Func() 
+        { 
+            while (true) 
+            { 
+                if (myFlag) 
+                { 
+                    Console.WriteLine("폴링 성공"); 
+                } 
+                Thread.Sleep(1000);
+            } 
+        } 
+    } 
+}
