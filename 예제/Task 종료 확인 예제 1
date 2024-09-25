@@ -1,0 +1,31 @@
+class Program
+{
+    private static void work(int n, int wait)
+{
+    Console.WriteLine($"Task{n} : {DateTime.Now.ToString("HH:mm:ss")}");
+    Task.Delay(1000 * wait).Wait();
+    Console.WriteLine($"Task{n} [ElapsedTime]: {DateTime.Now.ToString("HH:mm:ss")}");
+}
+
+static void Main(string[] args)
+{
+    var t1 = Task.Run( () => { work(1, 2); });
+    var t2 = Task.Run( () => { work(2, 3); });
+    var t3 = Task.Run( () => { work(3, 5); });
+    var t4 = Task.Run( () => { work(4, 1); });
+
+    // t1 Task가 종료
+    if(t1.IsCompleted)
+    {
+        Console.WriteLine("t1 is done");
+    }
+
+    // 모든 Task가 종료
+    // Task.WaitAll(t1, t2, t3, t4);
+    // Console.WriteLine("All done");
+
+    // Task 중 하나가 종료
+    // Task.WaitAny(t1, t2, t3, t4);
+    // Console.WriteLine("Something is done");
+}
+}
