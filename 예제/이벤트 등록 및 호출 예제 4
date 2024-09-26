@@ -1,0 +1,27 @@
+class GUI
+{
+    public event EventHandler OkButtonClickHandler;
+    public void OkButtonClick()
+    {
+        if(OkButtonClickHandler != null)
+        {
+            OkButtonClickHandler(this, EventArgs.Empty);
+        }
+    }
+}
+class Program
+{
+    static void Main(string[] args)
+    {
+        GUI gui = new GUI();
+        gui.OkButtonClickHandler += Gui_OkButtonClickHandler;
+        gui.OkButtonClick();
+        gui.OkButtonClick();
+        gui.OkButtonClick();
+    }
+
+    private static void Gui_OkButtonClickHandler(object sender, EventArgs e)
+    {
+        Console.WriteLine("Ok Button Click");
+    }
+}
