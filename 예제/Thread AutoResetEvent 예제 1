@@ -1,0 +1,27 @@
+public class Example
+{
+    private static AutoResetEvent autoEvent = new AutoResetEvent(false);
+
+    public static void Main()
+    {
+        Console.WriteLine("메인 스레드 작업을 시작합니다.");
+
+        Thread workerThread = new Thread(DoWork);
+        workerThread.Start();
+
+        Console.WriteLine("백그라운드 스레드의 작업 완료를 기다립니다.");
+        autoEvent.WaitOne();
+        Console.WriteLine("백그라운드 스레드의 작업이 완료되었습니다.");
+
+        Console.WriteLine("메인 스레드 작업을 계속합니다.");
+    }
+
+    public static void DoWork()
+    {
+        Console.WriteLine("백그라운드 스레드에서 작업을 시작합니다.");
+        Thread.Sleep(5000);
+        Console.WriteLine("백그라운드 스레드에서 작업이 완료되었습니다.");
+
+        autoEvent.Set();
+    }
+}
