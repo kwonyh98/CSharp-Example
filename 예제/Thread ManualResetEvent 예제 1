@@ -1,0 +1,28 @@
+class Program
+{
+    private static ManualResetEvent manualEvent = new ManualResetEvent(false);
+
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Starting two operations");
+
+        new Thread(DoWork).Start("Operation 1");
+        new Thread(DoWork).Start("Operation 2");
+
+        Console.WriteLine("Waiting for operations to finish");
+        manualEvent.WaitOne();
+
+        Console.WriteLine("All operations completed");
+    }
+
+    static void DoWork(object data)
+    {
+        string name = (string)data;
+
+        Console.WriteLine($"{name} starting");
+        Thread.Sleep(new Random().Next(2000, 5000));
+        Console.WriteLine($"{name} completed");
+
+        manualEvent.Set();
+    }
+}
