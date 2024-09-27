@@ -1,0 +1,20 @@
+class Program
+{
+    static void MainThread()
+    {
+        while(true)
+        {
+            Console.WriteLine("Hello Thread!");
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        Thread thread = new Thread(MainThread);
+        thread.IsBackground = true;
+        thread.Start();
+
+        Console.WriteLine("대기중");
+        Console.WriteLine("스레드 종료");
+    }
+}
