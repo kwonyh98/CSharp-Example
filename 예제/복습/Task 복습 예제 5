@@ -1,0 +1,24 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var outer = Task.Factory.StartNew( () => 
+        {
+            Console.WriteLine("Outer task 시작");
+            var inner = Task.Factory.StartNew( () => 
+            {
+                Console.WriteLine("Inner Task 시작.");
+                Thread.Sleep(2000);
+                Console.WriteLine("Inner Task 종료.");
+            });
+        });
+        outer.Wait();
+        Console.WriteLine("Outer Task 종료.");
+        Console.ReadLine();
+    }
+}
