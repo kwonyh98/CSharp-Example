@@ -1,0 +1,13 @@
+class Program
+{
+    static void MainThread()
+    {
+        Console.WriteLine("Hello Thread!");
+    }
+
+    static void Main(string[] args)
+    {
+        Thread thread = new Thread(MainThread);
+        thread.Start();
+    }
+}
