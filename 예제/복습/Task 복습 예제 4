@@ -1,0 +1,28 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Program
+{
+    static int TestA()
+    {
+        Console.WriteLine("TestA Start");
+        Thread.Sleep(1000);
+        Console.WriteLine("TestA End");
+        return 10;
+    }
+
+    static int TestB(int i)
+    {
+        Console.WriteLine("TestB Start");
+        Thread.Sleep(1000);
+        Console.WriteLine("TestB End");
+        return i + 10;
+    }
+
+    static void Main(string[] args)
+    {
+        var test = Task.Factory.StartNew(TestA).ContinueWith(task => TestB(task.Result));
+        Console.WriteLine("result : " + test.Result);
+    }
+}
