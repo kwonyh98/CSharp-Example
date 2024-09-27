@@ -42,3 +42,4 @@ class Program
         Console.WriteLine(timer.ElapsedMilliseconds + "s");
     }
 }
+
