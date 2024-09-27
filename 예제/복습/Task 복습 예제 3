@@ -1,0 +1,39 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+class Program
+{
+    static void FuncA()
+    {
+        Console.WriteLine("A함수 시작");
+        Thread.Sleep(1000);
+        Console.WriteLine("A함수 끝");
+    }
+    static void FuncB()
+    {
+        Console.WriteLine("B함수 시작");
+        Thread.Sleep(2000);
+        Console.WriteLine("B함수 끝");
+    }
+
+    static void FuncC()
+    {
+        Console.WriteLine("C함수 시작");
+        Thread.Sleep(3000);
+        Console.WriteLine("C함수 끝");
+    }
+
+    static void Main(string[] args)
+    {
+        var timer = Stopwatch.StartNew();
+        Task taskA = Task.Factory.StartNew(FuncA);
+        Task taskB = Task.Run(new Action(FuncB));
+        Task taskC = Task.Factory.StartNew(FuncC);
+        Task[] tasks = {taskA, taskB, taskC};
+        Task.WaitAll(tasks);
+        timer.Stop();
+        Console.WriteLine(timer.ElapsedMilliseconds + "s");
+    }
+}
