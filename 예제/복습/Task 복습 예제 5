@@ -15,7 +15,7 @@ class Program
                 Console.WriteLine("Inner Task 시작.");
                 Thread.Sleep(2000);
                 Console.WriteLine("Inner Task 종료.");
-            });
+            } //, TaskCreationOptions.AttachedToParent); // Inner 태스크가 완료되기를 기다리고 Outer 태스크가 완료되게 할 때 값을 추가
         });
         outer.Wait();
         Console.WriteLine("Outer Task 종료.");
