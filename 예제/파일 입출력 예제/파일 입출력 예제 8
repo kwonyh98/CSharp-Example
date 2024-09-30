@@ -1,0 +1,39 @@
+//텍스트 파일 한 행씩 읽기
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var filePath = "Example.txt";
+        if(File.Exists(filePath))
+        {
+            using(var reader = new StreamReader(filePath, Encoding.UTF8))
+            {
+                while(!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    Console.WriteLine(line);
+                }
+            }
+        }
+    }
+}
+
+
+//텍스트 파일 한번에 읽기
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var filePath = "Example.txt";
+        var lines = File.ReadLines(filePath, Encoding.UTF8);
+
+        foreach(var line in lines)
+        {
+            Console.WriteLine(line);
+        }
+    }
+}
