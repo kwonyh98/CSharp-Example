@@ -1,0 +1,67 @@
+using System.Text;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string currentPath = Directory.GetCurrentDirectory(); //특정 결로 지정 => string currnetPath = @"c:\test"; or string currnetPath = "c:\\test";
+            currentPath += "\\Save";
+
+            if(!Directory.Exists(currentPath))
+            {
+                Directory.CreateDirectory(currentPath);
+                Console.WriteLine(currentPath + " 에 폴더 생성!");
+            }
+
+            string filePath = currentPath + "\\test.txt";
+
+            string strData = "오늘도 강좌를 읽어 주셔서 감사합니다.\n블로그에 자주 찾아와 주세요.\n";
+
+            FileWrite(filePath, strData);
+
+            FileRead(filePath);
+        }
+
+        static void FileWrite(string filePath, string strData)
+        {
+            FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+
+            StreamWriter streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
+            streamWriter.Write(strData);
+
+            streamWriter.Close();
+            fileStream.Close();
+        }
+
+        static void FileRead(string filePath)
+        {
+            FileInfo fi = new FileInfo(filePath);
+
+            if(fi.Exists)
+            {
+                FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+                StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8);
+                
+                StringBuilder strBuilder = new StringBuilder(1000);
+
+                while(streamReader.Peek() > -1)
+                {
+                    string strLine = streamReader.ReadLine();
+                    strBuilder.AppendLine(strLine);
+                }
+
+                Console.WriteLine(strBuilder.ToString());
+
+                streamReader.Close();
+                fileStream.Close();
+            }
+            else
+            {
+                Console.WriteLine("읽을 파일이 없습니다.");
+            }
+        }
+    }
+}
