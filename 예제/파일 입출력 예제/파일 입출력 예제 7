@@ -1,0 +1,67 @@
+// 텍스트 파일에 한 행씩 문자열 쓰기
+class Program
+{
+    static void Main(string[] args)
+    {
+        var filePath = "Example.txt";
+        using(var writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("example 1");
+            writer.WriteLine("example 2");
+            writer.WriteLine("example 3");
+            writer.WriteLine("example 4");
+        }
+    }
+}
+
+
+//기존에 있던 텍스트 파일 끝에 행 추가하는 법
+class Program
+{
+    static void Main(string[] args)
+    {
+        var lines = new[] {"================", "example 5", "example 6",};
+        var filePath = "Example.txt";
+        using(var writer = new StreamWriter(filePath, append:true))
+        {
+            foreach(var line in lines)
+            {
+                writer.WriteLine(line);
+            }
+        }
+    }
+}
+
+
+//문자열 배열을 한번에 파일에 출력하는 방법
+class Program
+{
+    static void Main(string[] args)
+    {
+        var lines = new[] {"sword", "spear", "bow", "shield",};
+        var filePath = "Example.txt";
+        File.WriteAllLines(filePath, lines/*.Where(s => s.Length > 4*/);
+    }
+}
+
+
+//기존에 있던 텍스트 파일의 첫 머리에 행을 삽입하는 방법
+class Program
+{
+    static void Main(string[] args)
+    {
+        var filePath = "Example.txt";
+        using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            using (var reader = new StreamReader(stream))
+            using (var writer = new StreamWriter(stream))
+            {
+                string texts = reader.ReadToEnd();
+                stream.Position = 0;
+                writer.WriteLine("New example1");
+                writer.WriteLine("New example2");
+                writer.Write(texts);
+            }
+        }
+    }
+}
