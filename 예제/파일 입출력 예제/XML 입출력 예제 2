@@ -1,0 +1,33 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
+
+namespace xmlParseTest
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            XmlDocument xdoc = new XmlDocument();
+
+            xdoc.Load(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\Emp.xml");
+
+            XmlNodeList nodes = xdoc.SelectNodes("/Employees/Employee");
+            foreach(XmlNode emp in nodes)
+            {
+                string id = emp.Attributes["Id"].Value;
+                string name = emp.SelectSingleNode("Name").InnerText;
+                string dept = emp.SelectSingleNode("Dept").InnerText;
+                Console.WriteLine(id + "," + name + "," + dept);
+
+                foreach(XmlNode child in emp.ChildNodes)
+                {
+                    Console.WriteLine("{0} : {1}", child.Name, child.InnerText);
+                }
+            }
+        }
+    }
+}
