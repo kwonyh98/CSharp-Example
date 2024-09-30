@@ -1,0 +1,99 @@
+//File.WriteAllText
+using System.IO;
+ 
+class Program
+{
+    static void Main(string[] args)
+    {
+        string path = "파일경로.txt";
+        string text = "이 파일에 작성할 텍스트";
+        File.WriteAllText(path, text);
+        Console.WriteLine("텍스트가 파일에 성공적으로 작성되었습니다.");
+    }
+}
+
+
+//File.WriteAllLines
+using System.IO;
+ 
+class Program
+{
+    static void Main(string[] args)
+    {
+        string path = "파일경로.txt";
+        string[] lines = { "첫 번째 줄", "두 번째 줄", "세 번째 줄" };
+        File.WriteAllLines(path, lines);
+        Console.WriteLine("여러 줄의 텍스트가 파일에 성공적으로 작성되었습니다.");
+    }
+}
+
+
+//File.WriteAllBytes
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string path = Directory.GetCurrentDirectory() + "\\Save";
+        var filePath = path + "\\test.txt";
+        string text = "File.WriteAllBytes 를 활용한 파일 작성";
+        byte[] data = Encoding.ASCII.GetBytes(text);
+        File.WriteAllBytes(filePath, data);
+        Console.WriteLine("텍스트가 파일에 성공적으로 작성되었습니다.");
+    }
+}
+
+
+//StreamWriter의 WriteLine
+class Program
+{
+    static void Main(string[] args)
+    {
+        string path = Directory.GetCurrentDirectory() + "\\Save";
+        string filePath = path + "\\test.txt";
+
+        using(StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("StreamWriter를 사용한 텍스트 작성 예제");
+            writer.WriteLine("이 텍스트는 StreamWriter를 사용하여 작성됩니다.");
+        }
+        Console.WriteLine("StreamWriter를 사용하여 텍스트가 파일에 성공적으로 작성되었습니다.");
+    }
+}
+
+
+//FileStream의 write
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string path = Directory.GetCurrentDirectory() + "\\Save";
+        var filePath = path + "\\test.txt";
+
+        using(FileStream fs = File.OpenWrite(filePath))
+        {
+            var data = "FileStream 을 활용한 예제";
+            byte[] bytes = Encoding.UTF8.GetBytes(data);
+            fs.Write(bytes, 0, bytes.Length);
+        }
+        Console.WriteLine("데이터가 파일에 성공적으로 작성되었습니다.");
+    }
+}
+
+
+//File.WriteAllTextAsync
+using System.IO
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        string path = "파일경로.txt";
+        string text = "비동기적으로 쓰여진 텍스트";
+        await File.WriteAllTextAsync(path, text);
+        Console.WriteLine("비동기적으로 텍스트가 파일에 작성되었습니다.");
+    }
+}
