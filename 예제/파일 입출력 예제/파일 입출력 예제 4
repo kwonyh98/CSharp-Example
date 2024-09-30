@@ -1,0 +1,40 @@
+using System.Text;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string currentPath = Directory.GetCurrentDirectory(); //특정 결로 지정 => string currnetPath = @"c:\test"; or string currnetPath = "c:\\test";
+            currentPath += "\\Save";
+
+            if(Directory.Exists(currentPath))
+            {
+                Console.WriteLine("경로 존재");
+            }
+            else
+            {
+                Directory.CreateDirectory(currentPath);
+                Console.WriteLine(currentPath + " 에 폴더 생성!");
+            }
+
+            string filePath = currentPath + "\\test.txt";
+
+            FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            string strData = "오늘도 강좌를 읽어 주셔서 감사합니다.\n블로그에 자주 찾아와 주세요.\n";
+
+            StreamWriter streamWriter = new StreamWriter(fileStream, Encoding.UTF8);
+            streamWriter.Write(strData);
+            streamWriter.Close();
+
+            /*
+            byte[] byteArr = Encoding.UTF8.GetBytes(strData);
+            fileStream.Write(byteArr, 0, byteArr.Length);
+            */
+
+            fileStream.Close();
+            Console.WriteLine("파일 생성 또는 덮어쓰기 완료");
+        }
+    }
+}
