@@ -1,0 +1,21 @@
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string currentPath = Directory.GetCurrentDirectory(); //특정 결로 지정 => string currnetPath = @"c:\test"; or string currnetPath = "c:\\test";
+            currentPath += "\\Save";
+
+            if(Directory.Exists(currentPath))
+            {
+                Console.WriteLine("경로 존재");
+            }
+            else
+            {
+                Directory.CreateDirectory(currentPath);
+                Console.WriteLine(currentPath + " 에 폴더 생성!");
+            }
+        }
+    }
+}
