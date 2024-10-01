@@ -1,0 +1,6 @@
+using(System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\test.csv", false, System.Text.Encoding.GetEncoding("utf-8")))
+{
+    file.WriteLine("이름, 성적, 등급, 비교");
+
+    file.WriteLine("{0}, {1}, {2}, {3}", "철수", "87", "A", "합격");
+}
