@@ -1,0 +1,33 @@
+using System.Xml;
+
+// 쓰기설정 부분
+StringWriter sw = new StringWriter();
+XmlWriterSettings settings = new XmlWriterSettings
+{
+    Indent = true, 
+    IndentChars = "   ", 
+    NewLineChars = "\r\n", 
+    NewLineHandling = NewLineHandling.Replace, 
+    OmitXmlDeclaration = false
+};
+
+using (XmlWriter wr = XmlWriter.Create(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\Emp.xml", settings))
+{
+    wr.WriteStartDocument();
+    wr.WriteStartElement("Employees");
+
+    wr.WriteStartElement("Employee");
+    wr.WriteAttributeString("Id", "1001");
+    wr.WriteElementString("Name", "Kim");
+    wr.WriteElementString("Dept", "Sales");
+    wr.WriteEndElement();
+
+    wr.WriteStartElement("Employee");
+    wr.WriteAttributeString("Id", "1002");
+    wr.WriteElementString("Name", "Kwon");
+    wr.WriteElementString("Dept", "HR");
+    wr.WriteEndElement();
+
+    wr.WriteEndElement();
+    wr.WriteEndDocument();
+}
