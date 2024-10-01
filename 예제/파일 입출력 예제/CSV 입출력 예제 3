@@ -1,0 +1,38 @@
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string filePath = @"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\gun.csv";
+
+        List<string> list = new List<string>();
+        StringBuilder stringBuilder = new StringBuilder();
+
+        list.Add("PistolGunInfo, 15, 0.25, 0.3, 20, 0.5");
+        list.Add("AssaultRifleGunInfo, 30, 0.5, 0.5, 20, 0.5");
+        list.Add("ShotGunInfo, 5, 1, 1, 20, 0.25");
+        list.Add("SinperGunInfo, 5, 1, 1, 50, 2");
+        list.Add("GrenadeGunInfo, 1, 3, 1, 20, 10");
+        list.Add("FlameGunInfo, 100, 3, 0.1, 20, 2");
+        list.Add("BoomerangGunInfo, 5, 1, 0.5, 15, 0.5");
+        list.Add("BubbleGunInfo, 5, 1, 0.8, 5, 2");
+        list.Add("AK47GunInfo, 25, 2, 0.07, 15, 0.25");
+        list.Add("TimeSinperGunInfo, 5, 10, 1, 20, 2");
+        list.Add("RevolverGunInfo, 5, 1, 1, 20, 2");
+        list.Add("MutipleBoomerangGunInfo, 5, 1, 0.5, 17, 0.4");
+        list.Add("M16GunInfo, 30, 2, 0.5, 20, 0.9");
+        list.Add("ShotGunInfo_A, 4, 1, 0.7, 20, 0.28");
+        list.Add("ShotGunInfo_T, 5, 10, 1, 20, 0.3");
+        list.Add("ShieldGunInfo, 1, 1.5, 1, 18, 3");
+
+        stringBuilder.AppendLine("#TYPE, Max Bullet Cnt, Re Road Counter, Shot Counter, Shot Speed, Shot Damage");
+
+        foreach(var item in list)
+        {
+            stringBuilder.AppendLine(item);
+        }
+
+        File.WriteAllText(filePath, stringBuilder.ToString());
+    }
+}
