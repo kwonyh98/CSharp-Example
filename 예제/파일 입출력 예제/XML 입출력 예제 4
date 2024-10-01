@@ -1,0 +1,22 @@
+using (XmlReader rd = XmlReader.Create(@"C:\Temp\Emp.xml"))
+{
+    while(rd.Read())
+    {
+        if (rd.IsStartElement())
+        {
+            if (rd.Name == "Employee")
+            {
+                // attribute 읽기                            
+                string id = rd["Id"]; // rd.GetAttribute("Id");
+
+                rd.Read();   // 다음 노드로 이동        
+                                                
+                // Element 읽기
+                string name = rd.ReadElementContentAsString("Name", ""); 
+                string dept = rd.ReadElementContentAsString("Dept", "");
+
+                Console.WriteLine(id + "," + name + "," + dept);
+            }
+        }
+    }
+}
