@@ -1,0 +1,19 @@
+class Program
+{
+    static void Main(string[] args)
+    {
+        using(var reader = new StreamReader(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\gun.csv"))
+        {
+            while(!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+                foreach(var value in values)
+                {
+                    Console.Write(value + " | ");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+}
