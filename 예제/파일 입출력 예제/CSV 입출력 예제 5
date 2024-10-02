@@ -1,0 +1,78 @@
+using System.Text;
+
+class FWrite
+{
+    public void Write()
+    {
+        string filePath = @"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\ip.csv";
+
+        List<string> list = new List<string>();
+        StringBuilder stringBuilder = new StringBuilder();
+
+        list.Add("WG-Det-1, 172.30.14.21, DETROIT");
+        list.Add("WG-Det-2, 172.30.14.22, DETROIT");
+        list.Add("WG-Det-3, 172.30.14.23, DETROIT");
+        list.Add("WG-Dal-1, 172.30.14.24, DALLAS");
+        list.Add("WG-Dal-2, 172.30.14.25, DALLAS");
+        list.Add("WG-Chi-1, 172.30.14.26, CHICAGO");
+        list.Add("WG-Chi-2, 172.30.14.27, CHICAGO");
+        list.Add("WG-Chi-3, 172.30.14.28, CHICAGO");
+        list.Add("WG-Chi-4, 172.30.14.29, CHICAGO");
+        list.Add("WG-Chi-5, 172.30.14.30, CHICAGO");
+
+        stringBuilder.AppendLine("컴퓨터 이름, IP 주소, 도메인 이름");
+
+        foreach(var item in list)
+        {
+            stringBuilder.AppendLine(item);
+        }
+
+        File.WriteAllText(filePath, stringBuilder.ToString());
+    }
+}
+
+class FRead
+{
+    public void Read()
+    {
+        while(true)
+        {
+            Console.Write("키 값을 입력해 주세요. : ");
+            string key = Console.ReadLine();
+
+            if(key == "l")
+            {
+                break;
+            }
+            else
+            {
+                Console.WriteLine("해당하는 키 값이 없습니다.");
+            }
+        }
+        using(var reader = new StreamReader(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\ip.csv"))
+        {
+            while(!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+                foreach(var value in values)
+                {
+                    Console.Write(value + " | ");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+}
+
+class RW_Main
+{
+    static void Main(string[] args)
+    {
+        FWrite wt = new FWrite();
+        FRead rd = new FRead();
+
+        wt.Write();
+        rd.Read();
+    }
+}
