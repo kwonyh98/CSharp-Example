@@ -1,0 +1,25 @@
+using System.Text;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string datafile = "data.bin";
+
+        FileStream fw = File.Open(datafile, FileMode.Create);
+        using(BinaryWriter wr = new BinaryWriter(fw, Encoding.UTF8))
+        {
+            wr.Write("안녕하세요?");
+            wr.Write('한');
+        }
+
+        var fr = File.Open(datafile, FileMode.Open);
+        using(BinaryReader rdr = new BinaryReader(fr))
+        {
+            string s = rdr.ReadString();
+            char c = rdr.ReadChar();
+
+            Console.WriteLine("{0}, {1}", s, c);
+        }
+    }
+}
