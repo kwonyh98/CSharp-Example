@@ -1,0 +1,24 @@
+class Program
+{
+    static void Main(string[] args)
+    {
+        bool b = true;
+        int i = 101;
+        decimal d = 1024.05M;
+        byte by = 0xA0;
+        byte[] bytes = { 0xFF, 0x32, 0x11 };
+        string s = "Hello";
+
+        FileStream fs = File.Open(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\data.bin", FileMode.Create);
+
+        using(BinaryWriter wr = new BinaryWriter(fs))
+        {
+            wr.Write(b);
+            wr.Write(i);
+            wr.Write(d);
+            wr.Write(by);
+            wr.Write(bytes);
+            wr.Write(s);
+        }
+    }
+}
