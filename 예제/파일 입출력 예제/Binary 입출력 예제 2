@@ -1,0 +1,17 @@
+class Program
+{
+    static void Main(string[] args)
+    {
+        using(BinaryReader rdr = new BinaryReader(File.Open(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\data.bin", FileMode.Open)))
+        {
+            bool b = rdr.ReadBoolean();
+            int i = rdr.ReadInt32();
+            decimal d = rdr.ReadDecimal();
+            byte by = rdr.ReadByte();
+            byte[] bytes = rdr.ReadBytes(3);
+            string s = rdr.ReadString();
+
+            Console.WriteLine("{0}, {1}, {2}", b, i, s);
+        }
+    }
+}
