@@ -1,0 +1,82 @@
+using System.Text;
+using System.Xml;
+class Program
+{
+    private void CreateXML()
+    {
+        XmlTextWriter textWriter = new XmlTextWriter(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\example.xml", Encoding.UTF8);
+        textWriter.Formatting = Formatting.Indented;
+
+        textWriter.WriteStartDocument();
+
+        textWriter.WriteStartElement("root");
+
+        textWriter.WriteStartElement("root_a");
+        textWriter.WriteString("a");
+        textWriter.WriteEndElement();
+
+        textWriter.WriteStartElement("root_b");
+        
+        textWriter.WriteStartElement("b");
+        textWriter.WriteString("b");
+        textWriter.WriteEndElement();
+
+        textWriter.WriteStartElement("bb");
+        textWriter.WriteString("bb");
+        textWriter.WriteEndElement();
+
+        textWriter.WriteEndElement();
+        
+        textWriter.WriteStartElement("root_c");
+        textWriter.WriteString("1");
+        textWriter.WriteEndElement();
+
+        textWriter.WriteEndElement();
+
+        textWriter.WriteEndDocument();
+        textWriter.Close();
+    }
+
+    private void ReadXML()
+    {
+        try
+        {
+            XmlDocument xmldoc = new XmlDocument();
+            xmldoc.Load(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\example.xml");
+            XmlElement root = xmldoc.DocumentElement;
+
+            XmlNodeList nodes = root.ChildNodes;
+
+            foreach(XmlNode node in nodes)
+            {
+                switch(node.Name)
+                {
+                    case "root_a":
+                        string a = node.InnerText;
+                        break;
+
+                    case "root_b":
+                        string b = node["b"].InnerText;
+                        string bb = node["bb"].InnerText;
+                        break;
+                    
+                    case "root_c":
+                        int c = int.Parse(node.InnerText);
+                        break;
+                }
+            }
+        }
+        catch(IOException ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+}
+
+class Start
+{
+    static void Main(string[] args)
+    {
+        Program pg = new Program();
+    }
+}
