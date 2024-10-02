@@ -1,0 +1,17 @@
+using System.Xml;
+
+XmlWriterSettings xmlset = new XmlWriterSettings();
+xmlset.Indent = true;
+xmlset.NewLineOnAttributes = true;
+
+XmlWriter xm = XmlWriter.Create(@"C:\Users\kslv-2part\Desktop\TestWinform\bin\Debug\net8.0\Oracle.xml");
+xm.WriteStartDocument();
+xm.WriteStartElement("Oracle_Info");
+xm.WriteElementString("Id" , "aaa");
+xm.WriteElementString("Pw" , "bbbb");
+xm.WriteElementString("Sv" , "ccccc");
+xm.WriteElementString("Ip" , "dddddd");
+xm.WriteEndDocument();
+
+xm.Flush();
+xm.Close();
