@@ -1,0 +1,46 @@
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+
+namespace Server
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int port = 5000;
+            IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+            TcpListener server = new TcpListener(localAddr, port);
+            server.Start();
+            Console.WriteLine("Server started on " + localAddr + ":" + port);
+
+            while(true)
+            {
+                Console.WriteLine("Waiting for a connection...");
+
+                TcpClient client = server.AcceptTcpClient();
+
+                Console.WriteLine("Connected!");
+
+                NetworkStream stream = client.GetStream();
+
+                byte[] buffer = new byte[1024];
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+                string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                Console.WriteLine("Received: " + data);
+
+                string response = "ACK: " + data;
+                byte[] responseBuffer = Encoding.UTF8.GetBytes(response);
+
+                stream.Write(responseBuffer, 0, responseBuffer.Length);
+
+                Console.WriteLine("Sent: " + response);
+
+                stream.Close();
+                client.Close();
+            }
+        }
+    }
+}
