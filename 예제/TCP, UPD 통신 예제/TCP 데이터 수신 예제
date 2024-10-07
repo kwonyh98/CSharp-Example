@@ -1,0 +1,36 @@
+using System.Net.Sockets;
+using System.Text;
+
+namespace TcpCli
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            TcpClient tc = new TcpClient("127.0.0.1", 7000);
+
+            string msg = "Hello World!";
+            byte[] buff = Encoding.UTF8.GetBytes(msg);
+
+            NetworkStream stream = tc.GetStream();
+
+            stream.Write(buff, 0, buff.Length);
+
+            byte[] outbuf = new byte[1024];
+            int nbytes;
+            MemoryStream mem = new MemoryStream();
+
+            while((nbytes = stream.Read(outbuf, 0, outbuf.Length)) > 0)
+            {
+                mem.Write(outbuf, 0, nbytes);
+            }
+            byte[] outbytes = mem.ToArray();
+            mem.Close();
+
+            stream.Close();
+            tc.Close();
+
+            Console.WriteLine(Encoding.UTF8.GetString(outbytes));
+        }
+    }
+}
