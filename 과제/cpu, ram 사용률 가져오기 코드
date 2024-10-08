@@ -1,0 +1,33 @@
+using System;
+using System.Diagnostics;
+using System.Threading;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // CPU 성능 카운터 초기화
+        using (PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total"))
+        {
+            // 현재 프로세스 정보 가져오기
+            Process currentProcess = Process.GetCurrentProcess();
+
+            while (true)
+            {
+                // CPU 사용률 가져오기
+                float cpuUsage = cpuCounter.NextValue();
+
+                // RAM 사용량 (바이트 단위)
+                long ramUsage = currentProcess.WorkingSet64;
+
+                // 바이트를 메가바이트로 변환
+                float ramUsageMB = ramUsage / (1024f * 1024f);
+
+                Console.WriteLine($"CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {ramUsageMB:F2} MB");
+
+                // 1초 대기
+                Thread.Sleep(1000);
+            }
+        }
+    }
+}
