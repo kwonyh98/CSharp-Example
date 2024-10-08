@@ -1,0 +1,26 @@
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+
+namespace UDP_CLIENT
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            UdpClient cli = new UdpClient();
+
+            string msg = "안녕하세요";
+            byte[] datagram = Encoding.UTF8.GetBytes(msg);
+
+            cli.Send(datagram, datagram.Length, "127.0.0.1", 7777);
+            Console.WriteLine("[Send] 127.0.0.1:7777 로 {0} 바이트 전송", datagram.Length);
+
+            IPEndPoint epRemote = new IPEndPoint(IPAddress.Any, 0);
+            byte[] bytes = cli.Receive(ref epRemote);
+            Console.WriteLine("[Receive] {0} 로부터 {1} 바이트 수신", epRemote.ToString(), bytes.Length);
+
+            cli.Close();
+        }
+    }
+}
