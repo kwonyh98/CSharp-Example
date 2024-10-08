@@ -34,7 +34,7 @@ class UdpServer
             }
             else
             {
-                Console.WriteLine("해당하는 버튼이 없습니다.");
+                Console.WriteLine("해당하는 명령어가 없습니다.");
             }
         }
     }
