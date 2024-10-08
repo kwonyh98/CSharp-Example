@@ -14,7 +14,7 @@ namespace csvClient
 
             while(true)
             {
-                Console.Write("버튼을 입력하세요. : ");
+                Console.Write("명령어를 입력하세요. : ");
                 string message = Console.ReadLine();
 
                 if(message.Trim() == "exit")
