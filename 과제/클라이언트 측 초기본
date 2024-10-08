@@ -1,0 +1,32 @@
+using System.Net.Sockets;
+using System.Text;
+
+namespace csvClient
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            UdpClient client = new UdpClient();
+
+            string serverAddress = "127.0.0.1";
+            int serverPort = 5000;
+
+            while(true)
+            {
+                Console.Write("버튼을 입력하세요. : ");
+                string message = Console.ReadLine();
+
+                if(message.Trim() == "exit")
+                {
+                    break;
+                }
+
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                client.Send(data, data.Length, serverAddress, serverPort);
+            }
+
+            client.Close();
+        }
+    }
+}
