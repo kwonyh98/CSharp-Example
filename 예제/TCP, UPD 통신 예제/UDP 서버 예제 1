@@ -1,0 +1,24 @@
+using System.Net;
+using System.Net.Sockets;
+
+namespace UDP_SERVER
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            UdpClient srv = new UdpClient(7777);
+
+            IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+
+            while(true)
+            {
+                byte[] dgram = srv.Receive(ref remoteEP);
+                Console.WriteLine("[Receive] {0} 로부터 {1} 바이트 수신", remoteEP.ToString(), dgram.Length);
+
+                srv.Send(dgram, dgram.Length, remoteEP);
+                Console.WriteLine("[Send] {0} 로 {1} 바이트 송신", remoteEP.ToString(), dgram.Length);
+            }
+        }
+    }
+}
