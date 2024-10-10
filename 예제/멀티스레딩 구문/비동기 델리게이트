@@ -1,0 +1,29 @@
+class Program
+{
+    static void Main(string[] args)
+    {
+        // GetArea() 메서드를 사용하여 
+        // .NET의 Func 델리게이트 인스턴스를 생성        
+        // Func의 처음 2개 int는 입력, 마지막 int는 출력 타입
+        Func<int, int, int> work = GetArea;
+
+        // 델리게이트객체로부터 BeginInvoke() 실행
+        // 두 개의 입력 파라미터 10, 20 지정
+        IAsyncResult asyncRes = work.BeginInvoke(10, 20, null, null);
+
+        Console.WriteLine("Do something in Main thread");
+
+        // 델리게이트객체로부터 EndInvoke(IAsyncResult) 실행
+        // EndInvoke는 쓰레드가 완료되길 기다린다.
+        // 완료후 리턴 값을 돌려받는다.            
+        int result = work.EndInvoke(asyncRes);
+
+        Console.WriteLine("Result: {0}", result);
+    }
+
+    static int GetArea(int height, int width)
+    {
+        int area = height * width;
+        return area;
+    }
+}
