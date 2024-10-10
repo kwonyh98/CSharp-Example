@@ -1,13 +1,10 @@
 class MyEventPublisher
 {
-    // 이벤트를 정의합니다.
     public event EventHandler MyEvent;
 
-    // 이벤트를 발생시키는 메서드를 정의합니다.
     public void RaiseEvent()
     {
-        Console.WriteLine("이벤트 발생!"); // 이벤트 발생 메시지 출력
-        // 이벤트 핸들러가 등록되어 있는지 확인하고 호출합니다.
+        Console.WriteLine("이벤트 발생!");
         MyEvent?.Invoke(this, EventArgs.Empty);
     }
 }
@@ -18,16 +15,13 @@ class Program
     {
         MyEventPublisher publisher = new MyEventPublisher();
 
-        // 이벤트 핸들러를 등록합니다.
         publisher.MyEvent += MyEventHandler;
 
-        // 이벤트를 발생시킵니다.
         publisher.RaiseEvent();
     }
 
-    // 이벤트 핸들러 메서드
     static void MyEventHandler(object sender, EventArgs e)
     {
-        Console.WriteLine("이벤트가 처리되었습니다."); // 이벤트 처리 메시지 출력
+        Console.WriteLine("이벤트가 처리되었습니다.");
     }
 }
