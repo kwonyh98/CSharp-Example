@@ -8,20 +8,16 @@ namespace TaskResult
     {
         static bool IsPrime(long number)
         {
-            //2보다 작으면 소수가 아니므로 'false'를 반환합니다.
             if (number < 2)
                 return false;
-            //숫자가 2이거나 2로 나누어 떨어지는 경우 소수가 아니므로 메서드는 'false'를 반환합니다.
             if (number % 2 == 0 && number != 2)
                 return false;
-            //2보다 큰 다른 모든 홀수의 경우 메서드는 [2, number-1] 범위의 정수로 나눌 수 있는지 확인합니다.
-            //이러한 정수로 나눌 수 있는 경우 소수가 아니므로 이 메서드는 'false'를 반환합니다.
+            
             for (long i = 2; i < number; i++)
             {
                 if (number % i == 0)
                     return false;
             }
-            //모든 테스트를 통과한 숫자는 소수이며 메서드는 'true'를 반환합니다.
             return true;
         }
 
@@ -29,17 +25,16 @@ namespace TaskResult
         {
             Console.WriteLine("This program calculates all prime numbers between two numbers:");
             Console.WriteLine("Please enter the first number: ");
-            //소수를 구할 첫번째 범위
+            
             long from;
-            //정수가 아니면 다시 정수로 적어달라고 부탁하고 반복합니다.
-            //정수라던 다음 단계로 넘어갑니다.
+            
             while (!long.TryParse(Console.ReadLine(), out from))
             {
                 Console.WriteLine("Please enter a valid integer for the first number: ");
             }
 
             Console.WriteLine("Please enter the second number: ");
-            //소수를 구할 두번째 범위
+            
             long to;
             while (!long.TryParse(Console.ReadLine(), out to))
             {
@@ -47,7 +42,7 @@ namespace TaskResult
             }
 
             Console.WriteLine("Please tell me how many tasks to create: ");
-            //범위를 분담해서 작업할 task 갯 수
+            
             int taskCount;
             while (!int.TryParse(Console.ReadLine(), out taskCount))
             {
@@ -70,43 +65,30 @@ namespace TaskResult
 
                     return found;
                 };
-            //지정된 범위 내에서 소수를 찾기 위해 생성될 개별 작업을 저장하는 데 사용되는 Task 객체의 배열을 생성합니다.
+            
             Task<List<long>>[] tasks = new Task<List<long>>[taskCount];
-            //currentFrom의 초기값은 범위의 시작 번호인 from으로 설정
+            
             long currentFrom = from;
-            //currentTo의 초기값은 분할된 범위의 크기를 나타내는 to/tasks.Length로 설정
+            
             long currentTo = to / tasks.Length;
 
             for (int i = 0; i < tasks.Length; i++)
             {
-                //각 작업이 담당할 숫자 범위를 출력하는 데 사용
+                
                 Console.WriteLine("Task[{0}] : {1} ~ {2}",
                     i, currentFrom, currentTo);
-                //FindPrimeFunc 함수와 작업이 담당할 숫자 범위를
-                //포함하는 배열을 전달하여 새로운 'Task' 객체가 생성
                 tasks[i] = new Task<List<long>>(FindPrimeFunc,
                     new long[2] { currentFrom, currentTo });
 
-                //currentFrom 변수는 이전 작업의 범위 끝 +1로 업데이트되어
-                //서로 다른 작업 범위 사이에 겹치는 부분이 없도록 합니다.
                 currentFrom = currentTo + 1;
 
-                //현재 작업이 마지막 작업에서 두 ​​번째인 경우 currentTo 변수는
-                //to로 설정되어 최종 작업이 범위의 나머지 숫자를 포함하도록 합니다.
                 if (i == tasks.Length - 2)
                     currentTo = to;
                 else
-                    //마지막 작업이 아니라면, currentTo 변수는 업데이트되어 범위의
-                    //크기가 작업 간에 균등하게 나누어지도록 합니다.
                     currentTo = currentTo + (to / tasks.Length);
             }
 
-            //이제 작업이 시작합니다.
             Console.WriteLine("Started...");
-
-            //작업이 얼마가 걸리는지 확인하기위한 시간 변수
-            //작업 실행이 시작되기 전 현재 시간을 기록합니다.
-
 
             DateTime startTime = DateTime.Now;
 
@@ -115,21 +97,18 @@ namespace TaskResult
 
             List<long> total = new List<long>();
 
-            //몇 번째 task 작업물인지 확인하기 위한 변수
             int count = 0;
-            //모든 작업을 마무리할때까지 기다리고 작업 결과를 total 목록에 추가합니다.
+
             foreach (Task<List<long>> task in tasks)
             {
                 task.Wait();
                 total.AddRange(task.Result.ToArray());
                 count++;
-                //task의 결과 값들을 보여줌
                 Console.WriteLine("\nPrime numbers found by {0} task: {1}\n", count , string.Join(", ", total));
 
             }
-            //모든 작업이 완료된 후 현재 시간을 기록합니다.
             DateTime endTime = DateTime.Now;
-            //시작 시간과 종료 시간 사이에 경과된 시간을 계산합니다.
+            
             TimeSpan ellapsed = endTime - startTime;
             
             Console.WriteLine("Prime number count between {0} and {1} : {2}",
