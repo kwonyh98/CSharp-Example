@@ -1,0 +1,27 @@
+class Program
+{
+    static void Main(string[] args)
+    {            
+        Thread t1 = new Thread(new ThreadStart(Run));           
+        t1.Start();
+            
+        Thread t2 = new Thread(Run);
+        t2.Start();
+
+        Thread t3 = new Thread(delegate()
+        {
+            Run();
+        });
+        t3.Start();
+
+        Thread t4 = new Thread(() => Run());
+        t4.Start();
+
+        new Thread(() => Run()).Start();
+    }
+
+    static void Run()
+    {
+        Console.WriteLine("Run");
+    }
+}
