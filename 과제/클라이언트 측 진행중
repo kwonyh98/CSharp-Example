@@ -1,0 +1,62 @@
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace csvClient
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using(UdpClient Uclient = new UdpClient())
+            {
+                string serverAddress = "127.0.0.1";
+                int udpPort = 5000;
+                int tcpPort = 7000;
+
+                using(TcpClient Tclient = new TcpClient(serverAddress, tcpPort))
+                {
+                    NetworkStream stream = Tclient.GetStream();
+                    byte[] data = new byte[2048];
+                    
+                    Task.Run( () => 
+                    {
+                        while(true)
+                        {
+                            try
+                            {
+                                int nbytes = stream.Read(data, 0, data.Length);
+                                if(nbytes > 0)
+                                {
+                                    string output = Encoding.UTF8.GetString(data, 0, nbytes);
+                                    //Console.WriteLine($"{output}");
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                Console.WriteLine($"데이터 수신 중 오류 발생: {e.Message}");
+                                break;
+                            }
+                        }
+                    });
+
+                    while(true)
+                    {
+                        Console.Write("명령어의 숫자를 입력하세요. (1. 데이터 수집 시작, 2. 데이터 수집 종료): ");
+                        string message = Console.ReadLine();
+                        
+                        byte[] key = Encoding.UTF8.GetBytes(message);
+                        Uclient.Send(key, key.Length, serverAddress, udpPort);
+
+                        if(message == "2")
+                        {
+                            Tclient.Close();
+                            break;
+                        }
+                    }
+                }
+                Uclient.Close();
+            }
+        }
+    }
+}
