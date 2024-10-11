@@ -1,0 +1,98 @@
+using System;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Management;
+
+class UdpServer
+{
+    private static volatile bool collectingData = false;
+    private static TcpClient tc;
+    static void Main(string[] args)
+    {
+        UdpClient Userver = new UdpClient(5000);
+        TcpListener Tserver = new TcpListener(IPAddress.Any, 7000);
+        Tserver.Start();
+        Console.WriteLine("서버가 시작되었습니다.");
+
+        tc = Tserver.AcceptTcpClient();
+
+        while (true)
+        {
+            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            byte[] receivedBytes = Userver.Receive(ref remoteEndPoint);
+            string clientMessage = Encoding.UTF8.GetString(receivedBytes).Trim();
+
+            if (clientMessage == "1")
+            {
+                Console.WriteLine("데이터 수집을 시작합니다.");
+                StartDataCollection();
+            }
+            else if (clientMessage == "2")
+            {
+                Console.WriteLine("데이터 수집을 종료합니다.");
+                StopDataCollection();
+                break;
+            }
+            else
+            {
+                Console.WriteLine("해당하는 명령어가 없습니다.");
+            }
+        }
+
+        if(tc != null)
+        {
+            tc.Close();
+        }
+        Tserver.Stop();
+    }
+
+    private static void StartDataCollection()
+    {
+        if (!collectingData)
+        {
+            collectingData = true;
+            Task.Run(() =>
+            {
+                // CPU 카운터 초기화
+                PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                // 초기값을 가져오기 위한 대기
+                cpuCounter.NextValue();
+                Thread.Sleep(1000); // 1초 대기
+
+                while (collectingData)
+                {
+                    GetSystemUsage(cpuCounter);
+                    Thread.Sleep(1000); // 1초마다 데이터 수집
+                }
+            });
+        }
+    }
+
+    private static void StopDataCollection()
+    {
+        collectingData = false;
+    }
+
+    private static void GetSystemUsage(PerformanceCounter cpuCounter)
+    {
+        float cpuUsage = cpuCounter.NextValue();
+        Process currentProcess = Process.GetCurrentProcess();
+        long ramUsage = currentProcess.WorkingSet64;
+        float ramUsageMB = ramUsage / (1024f * 1024f);
+        var dataTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
+        Console.WriteLine($"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {ramUsageMB:F2} MB");
+        string msg = $"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {ramUsageMB:F2} MB";
+        
+        if(tc != null && tc.Connected)
+        {
+            NetworkStream stream = tc.GetStream();
+            byte[] data = Encoding.UTF8.GetBytes(msg);
+            stream.Write(data, 0, data.Length);
+        }
+    }
+}
