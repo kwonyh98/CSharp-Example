@@ -13,8 +13,9 @@ class UdpServer
     private static TcpClient tc;
     static void Main(string[] args)
     {
-        UdpClient Userver = new UdpClient(5000);
-        TcpListener Tserver = new TcpListener(IPAddress.Any, 7000);
+        UdpClient Userver = new UdpClient(5000); //UDP 포트 5000번
+        TcpListener Tserver = new TcpListener(IPAddress.Any, 7000); //TCP 포트 7000번
+
         Tserver.Start();
         Console.WriteLine("서버가 시작되었습니다.");
 
@@ -50,6 +51,7 @@ class UdpServer
         Tserver.Stop();
     }
 
+    
     private static void StartDataCollection()
     {
         if (!collectingData)
@@ -80,13 +82,15 @@ class UdpServer
     private static void GetSystemUsage(PerformanceCounter cpuCounter)
     {
         float cpuUsage = cpuCounter.NextValue();
-        Process currentProcess = Process.GetCurrentProcess();
-        long ramUsage = currentProcess.WorkingSet64;
-        float ramUsageMB = ramUsage / (1024f * 1024f);
+
+        ulong totalRam = GetTotalRam();
+        ulong availableRam = GetAvailableRam();
+        ulong usedRam = totalRam - availableRam; // 사용 중인 RAM = 전체 RAM - 사용 가능한 RAM
+
         var dataTime = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
-        Console.WriteLine($"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {ramUsageMB:F2} MB");
-        string msg = $"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {ramUsageMB:F2} MB";
+        Console.WriteLine($"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {usedRam:F2} MB");
+        string msg = $"시간: {dataTime} | CPU 사용률: {cpuUsage:F2}% | RAM 사용량: {usedRam:F2} MB";
         
         if(tc != null && tc.Connected)
         {
@@ -94,5 +98,29 @@ class UdpServer
             byte[] data = Encoding.UTF8.GetBytes(msg);
             stream.Write(data, 0, data.Length);
         }
+    }
+
+    public static ulong GetTotalRam() // RAM 전체 사용량 가져오기
+    {
+        ObjectQuery winQuery = new ObjectQuery("SELECT TotalVisibleMemorySize FROM Win32_OperatingSystem");
+        ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
+
+        foreach (ManagementObject item in searcher.Get())
+        {
+            return (ulong)item["TotalVisibleMemorySize"] / 1024;
+        }
+        return 0;
+    }
+
+    public static ulong GetAvailableRam() // RAM 사용 가능량 가져오기
+    {
+        ObjectQuery winQuery = new ObjectQuery("SELECT FreePhysicalMemory FROM Win32_OperatingSystem");
+        ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
+
+        foreach (ManagementObject item in searcher.Get())
+        {
+            return (ulong)item["FreePhysicalMemory"] /1024;
+        }
+        return 0;
     }
 }
