@@ -7,8 +7,9 @@ namespace csvClient
 {
     class Program
     {
-        static string filePath = "";
+        static string filePath = ""; //파일경로 전역변수 처리
         static bool stopReceiving = false;
+
         static void Main(string[] args)
         {
             using(UdpClient Uclient = new UdpClient())
@@ -39,9 +40,11 @@ namespace csvClient
                                 if(stream.DataAvailable)
                                 {
                                     int nbytes = stream.Read(data, 0, data.Length);
+
                                     if(nbytes > 0)
                                     {
                                         string output = Encoding.UTF8.GetString(data, 0, nbytes);
+
                                         if(!string.IsNullOrEmpty(filePath))
                                         {
                                             Save(filePath, output);
@@ -92,6 +95,7 @@ namespace csvClient
             }
         }
 
+        //서버에서 받은 데이터 CSV에 저장
         static void Save(string filePath, string output)
         {
             string[] parts = output.Split('|');
