@@ -1,0 +1,109 @@
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace csvClient
+{
+    class Program
+    {
+        static string filePath = "";
+        static bool stopReceiving = false;
+        static void Main(string[] args)
+        {
+            using(UdpClient Uclient = new UdpClient())
+            {
+                string serverAddress = "127.0.0.1";
+                int udpPort = 5000;
+                int tcpPort = 7000;
+
+                string currentPath = Directory.GetCurrentDirectory();
+                currentPath += "\\Data_Save";
+
+                if(!Directory.Exists(currentPath))
+                {
+                    Directory.CreateDirectory(currentPath);
+                }
+
+                using(TcpClient Tclient = new TcpClient(serverAddress, tcpPort))
+                {
+                    NetworkStream stream = Tclient.GetStream();
+                    byte[] data = new byte[2048];
+                    
+                    Task receiveTask = Task.Run( () => 
+                    {
+                        while(!stopReceiving)
+                        {
+                            try
+                            {
+                                if(stream.DataAvailable)
+                                {
+                                    int nbytes = stream.Read(data, 0, data.Length);
+                                    if(nbytes > 0)
+                                    {
+                                        string output = Encoding.UTF8.GetString(data, 0, nbytes);
+                                        if(!string.IsNullOrEmpty(filePath))
+                                        {
+                                            Save(filePath, output);
+                                        }
+                                    }
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                if(!stopReceiving)
+                                {
+                                    Console.WriteLine($"데이터 수신 중 오류 발생: {e.Message}");
+                                }
+                                break;
+                            }
+                        }
+                    });
+
+                    while(true)
+                    {
+                        Console.Write("명령어의 숫자를 입력하세요. (1. 데이터 수집 시작, 2. 데이터 수집 종료): ");
+                        string message = Console.ReadLine();
+
+                        byte[] key = Encoding.UTF8.GetBytes(message);
+                        Uclient.Send(key, key.Length, serverAddress, udpPort);
+
+                        if(message == "1" && string.IsNullOrEmpty(filePath))
+                        {
+                            string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
+                            filePath = Path.Combine(currentPath, fileName);
+
+                            using(StreamWriter csvWriter = new StreamWriter(filePath, false, Encoding.UTF8))
+                            {
+                                csvWriter.WriteLine("수집 시간, CPU 사용률(%), RAM 사용량(MB)");
+                            }
+                        }
+
+                        if(message == "2")
+                        {
+                            stopReceiving = true;
+                            receiveTask.Wait();
+                            Tclient.Close();
+                            break;
+                        }
+                    }
+                }
+                Uclient.Close();
+            }
+        }
+
+        static void Save(string filePath, string output)
+        {
+            string[] parts = output.Split('|');
+
+            string timeStamp = parts[0].Split(':')[1].Trim();
+            string cpuUsage = parts[1].Split(':')[1].Trim();
+            string ramUsage = parts[2].Split(':')[1].Trim();
+
+            using(StreamWriter csvWriter = new StreamWriter(filePath, true, Encoding.UTF8))
+            {
+                csvWriter.WriteLine($"{timeStamp}, {cpuUsage}, {ramUsage}");
+            }
+        }
+    }
+}
