@@ -1,0 +1,174 @@
+using System;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Management;
+
+namespace csvServer
+{
+    class Server_Program
+    {
+        private static volatile bool collectingData = false;
+        private static TcpListener Tserver;
+        private static TcpClient tc;
+        private static UdpClient Userver;
+        private static Timer dataCollectionTimer;
+        private static PerformanceCounter cpuCounter;  // 시스템 전체 CPU 사용률을 측정하기 위한 카운터
+
+        static void Main(string[] args)
+        {
+            Userver = new UdpClient(5000);
+            Tserver = new TcpListener(IPAddress.Any, 7000);
+
+            Tserver.Start();
+            Console.WriteLine("서버가 시작되었습니다.");
+
+            // 시스템 전체의 CPU 사용률을 측정하는 카운터 생성
+            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+
+            Task.Run(() => HandleTcpClients());
+
+            while (true)
+            {
+                try
+                {
+                    IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                    byte[] receivedBytes = Userver.Receive(ref remoteEndPoint);
+                    string clientMessage = Encoding.UTF8.GetString(receivedBytes).Trim();
+
+                    if (clientMessage == "1")
+                    {
+                        Console.WriteLine("데이터 수집을 시작합니다.");
+                        if (tc != null && tc.Connected)
+                        {
+                            StartDataCollection();
+                        }
+                        else
+                        {
+                            Console.WriteLine("클라이언트가 연결되지 않았습니다.");
+                        }
+                    }
+                    else if (clientMessage == "2")
+                    {
+                        Console.WriteLine("데이터 수집을 종료합니다.");
+                        StopDataCollection();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"UDP 메시지 수신 중 오류 발생: {e.Message}");
+                }
+            }
+        }
+
+        private static void HandleTcpClients()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.WriteLine("클라이언트 연결 대기 중...");
+                    TcpClient newClient = Tserver.AcceptTcpClient();
+                    Console.WriteLine("클라이언트가 연결되었습니다.");
+
+                    if (tc != null)
+                    {
+                        tc.Close();
+                    }
+
+                    tc = newClient;
+
+                    if (collectingData)
+                    {
+                        StartDataCollection();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"TCP 클라이언트 처리 중 오류 발생: {e.Message}");
+                }
+            }
+        }
+
+        private static void StartDataCollection()
+        {
+            if (!collectingData)
+            {
+                collectingData = true;
+                dataCollectionTimer = new Timer(CollectData, null, 0, 1000);
+            }
+        }
+
+        private static void StopDataCollection()
+        {
+            collectingData = false;
+
+            if (dataCollectionTimer != null)
+            {
+                dataCollectionTimer.Dispose();
+                dataCollectionTimer = null;
+            }
+        }
+
+        private static void CollectData(object state)
+        {
+            if (!collectingData)
+            {
+                return;
+            }
+
+            try
+            {
+                // CPU 사용률을 정확하게 수집
+                float cpuUsage = cpuCounter.NextValue(); // 시스템 전체 CPU 사용률
+                ulong totalRam = GetTotalRam();
+                ulong availableRam = GetAvailableRam();
+                ulong usedRam = totalRam - availableRam;
+
+                var dataTime = DateTime.Now.ToString("yyyy.MM.dd_HH:mm:ss");
+
+                Console.WriteLine($"시간 = {dataTime} | CPU 사용률 = {cpuUsage:F2}% | RAM 사용량 = {usedRam:F0} MB");
+
+                string msg = $"시간 = {dataTime} | CPU 사용률 = {cpuUsage:F2}% | RAM 사용량 = {usedRam:F0} MB";
+
+                if (tc != null && tc.Connected)
+                {
+                    NetworkStream stream = tc.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(msg);
+                    stream.Write(data, 0, data.Length);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"데이터 수집 중 오류 발생: {e.Message}");
+            }
+        }
+
+        public static ulong GetTotalRam()
+        {
+            ObjectQuery winQuery = new ObjectQuery("SELECT TotalVisibleMemorySize FROM Win32_OperatingSystem");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
+
+            foreach (ManagementObject item in searcher.Get())
+            {
+                return (ulong)item["TotalVisibleMemorySize"] / 1024;
+            }
+            return 0;
+        }
+
+        public static ulong GetAvailableRam()
+        {
+            ObjectQuery winQuery = new ObjectQuery("SELECT FreePhysicalMemory FROM Win32_OperatingSystem");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
+
+            foreach (ManagementObject item in searcher.Get())
+            {
+                return (ulong)item["FreePhysicalMemory"] / 1024;
+            }
+            return 0;
+        }
+    }
+}
