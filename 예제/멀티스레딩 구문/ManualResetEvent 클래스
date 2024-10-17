@@ -1,0 +1,39 @@
+using System;
+using System.Threading;
+
+namespace MultiThrdApp
+{
+    class Program
+    {
+        // ManualResetEvent 객체 필드
+        static ManualResetEvent manualEvent = new ManualResetEvent(false);
+
+        static void Main()
+        {
+            // 10개의 쓰레드 생성
+            // 10개 쓰레드 모두 manualEvent.WaitOne(); 에서
+            // 실행 중지후 대기중
+            for (int i = 0; i < 10; i++)
+            {
+                new Thread(Run).Start(i);
+            }
+
+            // 메인쓰레드            
+            Thread.Sleep(3000);
+
+            // ManualResetEvent 객체 Set() 호출
+            // 10개 쓰레드 모두 실행 계속함.
+            manualEvent.Set(); 
+        }
+
+        static void Run(object id)
+        {            
+            Console.WriteLine("{0} in Wait", id);
+
+            // ManualResetEvent 신호 대기
+            manualEvent.WaitOne();                        
+
+            Console.WriteLine("{0}: Done", id);
+        }
+    }
+}
