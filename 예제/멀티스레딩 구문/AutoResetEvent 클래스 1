@@ -1,0 +1,35 @@
+using System;
+using System.Threading;
+
+namespace MultiThrdApp
+{
+    class Program
+    {
+        // AutoResetEvent 객체 필드
+        static AutoResetEvent autoEvent = new AutoResetEvent(false);
+
+        static void Main()
+        {
+            // 쓰레드 A 생성
+            Thread A = new Thread(Run);
+            A.Name = "Thread A";
+            A.Start();            
+
+            // 메인쓰레드            
+            Thread.Sleep(3000); //3초 대기
+            autoEvent.Set(); // 쓰레드 A에 신호
+        }
+
+        static void Run()
+        {
+            string name = Thread.CurrentThread.Name;
+            Console.WriteLine("{0}: Run Start", name);
+
+            // AutoResetEvent 신호 대기
+            autoEvent.WaitOne();            
+            Console.WriteLine("{0} : DoWork", name);
+
+            Console.WriteLine("{0}: Run End", name);
+        }
+    }
+}
