@@ -1,0 +1,204 @@
+using System;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Management;
+
+namespace csvServer
+{
+    class Server_Program
+    {
+        private static volatile bool collectingData = false;
+        private static TcpListener Tserver;
+        private static TcpClient tc;
+        private static UdpClient Userver;
+        private static Timer dataCollectionTimer;
+        private static PerformanceCounter cpuCounter;  // 시스템 전체 CPU 사용률을 측정하기 위한 카운터
+
+        static void Main(string[] args)
+        {
+            // args가 충분하지 않으면 오류 메시지 출력
+            if(args.Length < 3)
+            {
+                Console.WriteLine("형식: example.exe <서버 IP 주소> <UDP 포트> <TCP 포트>");
+                return;
+            }
+
+            // args에서 IP 주소와 포트 번호 설정
+            string ipAddr = args[0];
+            int udpPort = int.Parse(args[1]);
+            int tcpPort = int.Parse(args[2]);
+
+            InitalizeServer(ipAddr, udpPort, tcpPort);
+
+            // 비동기적으로 TCP 클라이언트 연결 처리
+            Task.Run(() => HandleTcpClients());
+
+            LisenForUdpMessages();
+        }
+
+        private static void InitalizeServer(string ipAddr, int udpPort, int tcpPort)
+        {
+            // UDP 서버 및 TCP 서버 설정
+            Userver = new UdpClient(udpPort);
+            Tserver = new TcpListener(IPAddress.Parse(ipAddr), tcpPort);
+
+            // 서버 시작
+            Tserver.Start();
+            Console.WriteLine($"서버가 {ipAddr}:{tcpPort}에서 시작되었습니다.");
+        }
+
+        private static void LisenForUdpMessages()
+        {
+            while (true)
+            {
+                try
+                {
+                    IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                    byte[] receivedBytes = Userver.Receive(ref remoteEndPoint); // UDP 메시지 수신
+                    string clientMessage = Encoding.UTF8.GetString(receivedBytes).Trim();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"UDP 메시지 수신 중 오류 발생: {e.Message}");
+                }
+            }
+        }
+
+        private static void HandleClientMessages(string message)
+        {
+            // 클라이언트의 메시지에 따라 데이터 수집 시작 또는 종료
+             if (message == "1")
+            {
+                Console.WriteLine("데이터 수집을 시작합니다.");
+                if (tc != null && tc.Connected)
+                {
+                    StartDataCollection();
+                }
+                else
+                {
+                    Console.WriteLine("클라이언트가 연결되지 않았습니다.");
+                }
+            }
+            else if (message == "2")
+            {
+                Console.WriteLine("데이터 수집을 종료합니다.");
+                StopDataCollection();
+            }
+        }
+
+        // TCP 클라이언트를 처리하는 메서드
+        private static void HandleTcpClients()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.WriteLine("클라이언트 연결 대기 중...");
+                    TcpClient newClient = Tserver.AcceptTcpClient(); // 클라이언트 연결 대기
+                    Console.WriteLine("클라이언트가 연결되었습니다.");
+
+                    tc?.Close();
+
+                    tc = newClient; // 새로운 클라이언트 할당
+
+                    if (collectingData)
+                    {
+                        StartDataCollection();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"TCP 클라이언트 처리 중 오류 발생: {e.Message}");
+                }
+            }
+        }
+
+        // 데이터 수집 시작 메서드
+        private static void StartDataCollection()
+        {
+            if (!collectingData)
+            {
+                collectingData = true; // 수집 상태를 true로 변경
+
+                // CPU 사용률을 모니터링하는 PerformanceCounter 설정
+                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+
+                // Timer 설정: 1초마다 GetSystemUsage 메서드를 호출
+                dataCollectionTimer = new Timer(_ => CollectData(cpuCounter), null, 0, 1000); // 처음 0ms 지연 후 1000ms 간격으로 실행
+            }
+        }
+
+        // 데이터 수집 종료 메서드
+        private static void StopDataCollection()
+        {
+            collectingData = false; // 수집 상태를 false로 변경
+
+            if (dataCollectionTimer != null)
+            {
+                dataCollectionTimer.Dispose(); // 타이머 정지 및 해제
+                dataCollectionTimer = null;
+            }
+        }
+
+        // 데이터를 수집하여 클라이언트에 전송하는 메서드
+        private static void CollectData(object state)
+        {
+            if (!collectingData || cpuCounter == null) return;
+
+            try
+            {
+                // CPU 사용률 및 RAM 정보 수집
+                float cpuUsage = cpuCounter.NextValue(); // 시스템 전체 CPU 사용률
+                ulong totalRam = GetTotalRam(); // 전체 RAM
+                ulong availableRam = GetAvailableRam(); // 사용 가능한 RAM
+                ulong usedRam = totalRam - availableRam; // 사용 중인 RAM = 전체 RAM - 사용 가능한 RAM
+
+                var dataTime = DateTime.Now.ToString("yyyy.MM.dd_HH:mm:ss"); // 현재 시간 포멧 설정
+                string msg = $"시간 = {dataTime} | CPU 사용률 = {cpuUsage:F2}% | RAM 사용량 = {usedRam:F0} MB"; // 클라이언트에 전송할 메시지 작성
+
+                Console.WriteLine(msg);
+                SendDataToClient(msg);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"데이터 수집 중 오류 발생: {e.Message}");
+            }
+        }
+
+        private static void SendDataToClient(string msg)
+        {
+            if (tc != null && tc.Connected)
+            {
+                NetworkStream stream = tc.GetStream();
+                byte[] data = Encoding.UTF8.GetBytes(msg);
+                stream.Write(data, 0, data.Length);
+            }
+        }
+
+        public static ulong GetTotalRam() // RAM 전체 사용량 가져오기
+        {
+            return GetRamValue("TotalVisibleMemorySize");
+        }
+
+        public static ulong GetAvailableRam() // RAM 사용 가능량 가져오기
+        {
+            return GetRamValue("FreePhysicalMemory");
+        }
+
+        private static ulong GetRamValue(string property)
+        {
+            var query = new ObjectQuery($"SELECT {property} FROM Win32_OperatingSystem");
+            var searcher = new ManagementObjectSearcher(query);
+            foreach (ManagementObject item in searcher.Get())
+            {
+                return (ulong)item[property] / 1024; // KB -> MB로 변환
+            }
+            return 0;
+        }
+    }
+}
