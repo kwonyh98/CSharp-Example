@@ -1,0 +1,202 @@
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace csvClient
+{
+    class Client_Program
+    {
+        static string filePath = "";  // 데이터를 저장할 CSV 파일 경로
+        static bool stopReceiving = false; // 데이터 수신을 종료하는 플래그
+        static TcpClient Tclient = null; // TCP 클라이언트 객체
+        static UdpClient Uclient = null; // UDP 클라이언트 객체
+        static NetworkStream stream = null; // TCP 전송을 위한 네트워크 스트림
+
+        static string serverAddress; // 서버 IP 주소
+        static int udpPort; // UDP 포트 번호
+        static int tcpPort; // TCP 포트 번호
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                ValidateArguments(args);
+                InitalizeConnections(args);
+                CreateDataDirectory();
+
+                CommandLoop();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"오류 발생: {e.Message}");
+            }
+            finally
+            {
+                // 프로그램 종료 시 모든 자원 해제
+                CleanUpResources();
+            }
+        }
+
+        private static void ValidateArguments(string[] args)
+        {
+            if(args.Length < 3)
+            {
+                Console.WriteLine("형식: example.exe <서버 IP 주소> <UDP 포트> <TCP 포트>");
+                Environment.Exit(1);
+            }
+        }
+
+        private static void InitalizeConnections(string[] args)
+        {
+            // args에서 IP 주소와 포트 번호 설정
+            serverAddress = args[0];
+            udpPort = int.Parse(args[1]);
+            tcpPort = int.Parse(args[2]);
+
+            // TCP 클라이언트로 서버에 먼저 연결
+            ConnectToServer(); // TCP 연결 설정
+
+            // UDP 클라이언트 생성
+            Uclient = new UdpClient();
+        }
+
+        private static void CreateDataDirectory()
+        {
+            // 현재 디렉터리 안에 데이터를 저장할 폴더 경로 설정
+            string currentPath = Path.Combine(Directory.GetCurrentDirectory(), "Data_Save");
+
+            // 폴더가 존재하지 않을 시 생성
+            if (!Directory.Exists(currentPath))
+            {
+                Directory.CreateDirectory(currentPath);
+            }
+        }
+
+        private static void CommandLoop()
+        {
+            while(true)
+            {
+                Console.Write("명령어의 숫자를 입력하세요. (1. 데이터 수집 시작, 2. 데이터 수집 종료): ");
+                string message = Console.ReadLine();
+
+                SendUdpCommand(message);
+
+                if(message == "1")
+                {
+                    StartDataCollection();
+                }
+                else if(message == "2")
+                {
+                    StopDataCollection();
+                }
+                else
+                {
+                    Console.WriteLine("해당하는 명령어가 없습니다.");
+                }
+            }
+        }
+
+        private static void SendUdpCommand(string message)
+        {
+            byte[] key = Encoding.UTF8.GetBytes(message);
+            Uclient.Send(key, key.Length, serverAddress, udpPort); // 명령어를 UDP로 전송
+        }
+
+        private static void StartDataCollection()
+        {
+            // TCP 연결이 닫혔거나 null인 경우 다시 연결
+            if (Tclient == null || !Tclient.Connected)
+            {
+                ConnectToServer(); // TCP 연결 설정
+            }
+
+            Console.WriteLine("데이터 수집이 시작됩니다.");
+
+            // 파일 이름 = 현재 시간으로 설정 후 CSV 파일을 생성
+            string fileName = DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
+            filePath = Path.Combine(Path.GetDirectoryName(filePath), fileName);
+
+            // CSV 파일에 헤더 작성
+            File.WriteAllText(filePath, "수집 시간, CPU 사용률(%), RAM 사용량(MB)\n");
+
+            // 비동기 데이터 수신 시작
+            stopReceiving = false;
+            Task.Run(() => ReceiveData());
+        }
+
+        private static void StopDataCollection()
+        {
+            Console.WriteLine("데이터 수집이 종료됩니다.");
+            stopReceiving = true; // 데이터 수집 종료 플래그 설정
+
+            // TCP 연결 종료
+            if (Tclient != null)
+            {
+                stream.Close(); // 네트워크 스트림 닫기
+                Tclient.Close(); // TCP 클라이언트 연결 종료
+                Tclient = null; // 클라이언트 객체 초기화
+                stream = null; // 스트림 객체도 초기화
+                Console.WriteLine("TCP 연결이 종료되었습니다.");
+            }
+        }
+
+        // TCP 서버와 연결하는 메서드
+        static void ConnectToServer()
+        {
+            Tclient = new TcpClient(serverAddress, tcpPort); // 새 TCP 연결
+            stream = Tclient.GetStream();
+            Console.WriteLine("서버와의 TCP 연결이 설정되었습니다.");
+        }
+
+        // 서버로부터 데이터를 수신하여 CSV 파일에 저장하는 메서드
+        static void ReceiveData()
+        {
+            byte[] data = new byte[2048];
+            try
+            {
+                while (!stopReceiving)
+                {
+                    Array.Clear(data, 0, data.Length);
+                    int nbytes = stream.Read(data, 0, data.Length); // 데이터가 없으면 블록됨
+                    if (nbytes > 0)
+                    {
+                        string output = Encoding.UTF8.GetString(data, 0, nbytes); // 수신한 데이터 UTF-8로 변환 후 출력
+                        Save(output);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                if (!stopReceiving)
+                {
+                    Console.WriteLine($"데이터 수신 중 오류 발생: {e.Message}");
+                }
+            }
+        }
+
+        // 서버에서 받은 데이터를 CSV 파일에 저장하는 메서드
+        private static void Save(string output)
+        {
+            string[] parts = output.Split('|'); // 서버에서 받은 데이터를 '|' 기준으로 분리
+            if(parts.Length < 3) return;
+
+            // 각 데이터 항목을 분리하여 CSV 형태에 맞게 저장
+            string timeStamp = parts[0].Split('=')[1].Trim();
+            string cpuUsage = parts[1].Split('=')[1].Trim();
+            string ramUsage = parts[2].Split('=')[1].Trim();
+
+            // CSV 파일에 수집 시간, CPU 사용률, RAM 사용량을 기록
+            string line = $"{timeStamp}, {cpuUsage}, {ramUsage}\n";
+            File.AppendAllText(filePath, line);
+        }
+
+        private static void CleanUpResources()
+        {
+            stream?.Close();
+            Tclient?.Close();
+            Uclient?.Close();
+        }
+    }
+}
